@@ -1,0 +1,19 @@
+#!/bin/bash
+TMP=$(mktemp)
+trap "rm -rf $TMP" EXIT SIGINT
+OPT_AR="$1" && shift
+
+
+while (( "$#" ));do
+while true
+do
+yt-dlp --print '%(title)s %(duration>%H:%M:%S)s' -f ${OPT_AR} "$1" -o '~/Downloads/youtube/%(title)s.%(ext)s' --progress --no-simulate 2>>$TMP
+grep "Requested format is not available" $TMP >/dev/null 2>&1 && printf "\n*************FORMAT NOT AVAILABLE************\n\n" && break
+
+grep -F "ERROR" $TMP >/dev/null 2>&1 || break
+grep -F "Deleting original file" $TMP >/dev/null 2>&1 && break
+#[ -s $TMP ] && break -- check if file empty
+cat /dev/null > $TMP
+done
+shift
+done

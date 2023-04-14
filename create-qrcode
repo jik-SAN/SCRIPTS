@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rand=$(openssl rand -hex 5)
+qrencode -o ${rand}.png $1

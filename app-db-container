@@ -1,0 +1,107 @@
+#!/bin/bash
+namae=$(basename $0)
+restart_server()
+{
+	[[ $(podman ps -a | grep -wo server) ]] && printf "\nRestarting PHP server!!!!\n" && podman start server && exit 0
+}
+
+server(){
+	restart_server
+	printf "\nCreating PHP server container : server\n"
+	podman run -d --pod php --name server -v $HOME/PHP/web_data:/var/www/test/htdocs:Z -e PMA_HOST=127.0.0.1 \
+	-e PMA_PORT=3306 nserver:1
+	#-p 127.0.0.1:8080:80
+}
+
+mongo_ui(){
+	podman run -d --rm --pod md -e ME_CONFIG_MONGODB_SERVER=127.0.0.1 -e ME_CONFIG_MONGODB_ADMINUSERNAME=root -e ME_CONFIG_MONGODB_ADMINPASSWORD=pass1 mongo-express
+}
+
+restart_modb(){
+	[[ $(podman ps -a | grep -wo modb) ]] && printf "\nRestarting MongoDB container (root:pass1)\n" && podman start modb && exit 0
+
+}
+
+modb(){
+	restart_modb
+	printf "\nCreating MongoDB container (root:pass1)\n"
+	podman run -d --name modb --pod md -e MONGODB_ENABLE_DIRECTORY_PER_DB=false \
+	 -e MONGODB_ENABLE_JOURNAL=false -e MONGODB_ENABLE_IPV6=false \
+	  -v $HOME/PHP/mongo_data:/data/db:Z mongo:4.4.18 --auth
+}
+
+restart_db()
+{
+	[[ $(podman ps -a | grep -wo pdb) ]] && printf "\nRestarting MySQL container (dd:pass1)\n" && podman start pdb && exit 0
+}
+
+db(){
+	restart_db
+	printf "\nCreating MySQL container (dd:pass1)\n"
+	podman run -d --pod php --name pdb -e MYSQL_DATABASE="pdb" -e MYSQL_ROOT_PASSWORD="1234" \
+	-e MYSQL_USER="dd" -e MYSQL_PASSWORD="pass1" -v ~/PHP/db_data:/var/lib/mysql:Z nsql:1
+	#-p 127.0.0.1:3306:3306
+}
+
+mongo_pod(){
+	podman pod create -p 127.0.0.1:8081:8081 -p 127.0.0.1:27017:27017 md
+}
+
+pod(){
+	podman pod create -p 127.0.0.1:8080:80 php
+	#
+}
+
+
+#[ $# -eq 0 ] && server && exit 0
+
+#while getopts "sdrm" OPTIONS;do
+	case "$1" in
+		'mongo') printf "\nStarting MongoDB Container\n"
+		modb
+		exit 0;;
+		'mo') printf "\nStarting MongoDB & Mongo-Express Web UI Container\n"
+		modb
+		mongo_ui
+		exit 0;;
+		'mos') printf "\nStopping MongoDB & Mongo-Express Web UI Container\n"
+		podman pod stop md && killall "podman pause" 2>/dev/null
+		exit 0;;
+		'st') printf "\nStarting PHP server Container\n"
+		server
+		exit 0;;
+		'ss') printf "\nStopping PHP server Container\n"
+		podman stop server
+		exit 0;;
+		'sd') printf "\nStopping MySQL Container\n"
+		podman stop pdb
+		exit 0;;
+		'ds') printf "\nRemoving PHP server Container\n"
+		podman rm -f server
+		exit 0;;
+		'db') printf "\nRemoving MySQL Container\n"
+		podman rm -f pdb
+		exit 0;;
+		'm') db
+		exit 0;;
+		'pp') printf "\n Starting POD php.........\n"
+		podman start server >/dev/null 2>&1
+		podman start pdb >/dev/null 2>&1
+		exit 0;;
+		'ps') printf "\nStopping POD php..........\n"
+		podman pod stop php && killall "podman pause" 2>/dev/null
+		exit 0;;
+		'np') printf "\n Create new POD php!!!"
+		pod
+		exit 0;;
+		'dp') printf "\n Remove POD php!!!"
+		podman pod rm -f php
+		exit 0;;
+		*) printf "\n$namae m (Start container pdb.)\n$namae ds (Delete container server.) \
+		\n$namae db (Delete container pdb.)\n$namae ss (stop container server.) \
+		\n$namae sd (stop container pdb.)\n$namae ps (stop pod php.) \
+		\n$namae pp (start pod php.)\n$namae st (start server container.) \
+		\n$namae np (create pod php.)\n$namae dp (remove pod php.)";;
+		esac
+#done
+#  ALTER USER 'kat'@'localhost' IDENTIFIED WITH mysql_native_password BY 'katpw';

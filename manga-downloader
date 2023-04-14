@@ -1,0 +1,18 @@
+#!/usr/bin/bash
+
+TEMP_MANGA=$(mktemp -d)
+MANGA_FOLDER=$HOME/Desktop/comics
+cd $HOME/Desktop/
+trap "rm -rvf $TEMP_MANGA" EXIT
+trap "rm -rvf $TEMP_MANGA" SIGINT
+
+args="$*";
+firejail --profile=$HOME/firejail/gallerydl.profile gallery-dl -d "$TEMP_MANGA" -c "$HOME/manga.conf" $args;
+
+if [ -d $MANGA_FOLDER ]
+then
+fd . $TEMP_MANGA -t d -x 7z a -r -mx=0 $MANGA_FOLDER/{/}.cb7 {};
+else
+echo "NO COMICS DIRECTORY IN DESKTOP!!!!" && exit;
+fi
+

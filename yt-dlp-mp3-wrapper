@@ -1,0 +1,6 @@
+#!/bin/bash
+#echo "ENTER  SONG URL"
+#read url1;
+
+url1=$1
+yt-dlp -f ba $url1 --ignore-config -o "~/Music/%(title)s.%(ext)s" --exec "ffmpeg -i {}  -codec:a libmp3lame -qscale:a 0 {}.mp3 && rm {} " --extractor-args "youtube:player_skip=webpage,configs,js;player_client=android,web"

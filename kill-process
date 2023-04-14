@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+
+if [ "$UID" != "0" ]
+then
+ps -u $USER k -size -o pid=,%mem=,%cpu=,comm= | fzf --height 100% --ansi --algo=v1 --border=sharp \
+--prompt="     ➤  " --pointer="➤ " \
+--bind 'ctrl-r:reload(ps -u $USER k -size -o pid=,%mem=,%cpu=,comm=)' --header '    CTRL-R to reload' \
+--marker="➤ " --margin 0,0,0,0 \
+--color fg:-1,bg:-1,hl:46,fg+:40,bg+:233,hl+:46 --color prompt:166,border:46 \
+-m | xargs | cut -d" " -f1 | xargs -r kill -15
+else
+echo "Cant kill Root process !!!"
+fi

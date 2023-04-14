@@ -1,0 +1,17 @@
+#!/bin/bash
+[ ! -f ~/Downloads/yt-dlp*.zip ] && exit
+cd ~/Downloads/
+unzip yt-dlp*.zip
+cd yt-dlp*/
+make yt-dlp
+mv -v yt-dlp ~/.local/bin/yt-dlp1
+rm -rfv ../yt-dlp-*
+cd ~/.local/bin/
+rm -vf yt-dlp
+mv -v yt-dlp1 yt-dlp
+chmod 744 yt-dlp
+
+
+
+
+

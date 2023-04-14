@@ -1,0 +1,31 @@
+#!/bin/bash
+
+TMP=$(mktemp)
+trap "rm -rf $TMP" EXIT SIGINT
+#EXTRA_OPT="-4 --http-chunk-size 2M"
+EXTRA_OPT="-4"
+OPT_AR="$1" && shift
+declare -A FORMATS_YT=([tf]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[height<280][vcodec=vp9]+wa*[acodec=opus]/bv*[height<280][vcodec=avc1.4d4015]+wa*[acodec=opus]/bv*[height<280][vcodec=vp9]+wa*[acodec=mp4a.40.5]/bv*[height<280][vcodec=avc1.4d400c]+wa*[acodec=mp4a.40.5] --progress --no-simulate" [of]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[height<170][vcodec=vp9]+wa*[acodec=opus]/bv*[height<170][vcodec=avc1.4d400b]+wa*[acodec=opus]/bv*[height<170][vcodec=avc1.4d400b]+wa*[acodec=mp4a.40.5]/bv*[height<170][vcodec=avc1.4d400c]+wa*[acodec=mp4a.40.5]/bv*[height<170][vcodec=avc1.4d400c]+wa*[acodec=opus] --progress --no-simulate" [ts]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[height<370][vcodec=vp9]+wa*[acodec=opus]/bv*[height<370][vcodec=avc1.4d401e]+wa*[acodec=opus]/bv*[height<370][vcodec=vp9]+wa*[acodec=mp4a.40.5] --progress --no-simulate" [fe]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[height<500][vcodec=vp9]+wa*[acodec=opus] --progress --no-simulate" [tg]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[ext=3gp] --progress --no-simulate" [mf]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f wa[ext=m4a][acodec=mp4a.40.5][vcodec=none] --progress --no-simulate" [st]="yt-dlp --print %(title)s|%(duration>%H:%M:%S)s -f bv*[height<780][vcodec=vp9][fps=30]+wa*[acodec=opus]/bv*[height<780][vcodec=avc1.4d401f][fps=30]+wa*[acodec=opus] --progress --no-simulate")
+
+while (( "$#" ));do
+while true
+do
+${FORMATS_YT[$OPT_AR]} "$1" ${EXTRA_OPT} 2>>$TMP
+grep "Requested format is not available" $TMP >/dev/null 2>&1 && printf "\n*************FORMAT NOT AVAILABLE************\n\n" && break
+
+grep -F "ERROR" $TMP >/dev/null 2>&1 || break
+grep -F "Deleting original file" $TMP >/dev/null 2>&1 && echo "$$$$$$$$done$$$$$$$$" && break
+#[ -s $TMP ] && break -- check if file empty
+cat /dev/null > $TMP
+done
+shift
+done
+
+
+
+
+
+
+
+
+

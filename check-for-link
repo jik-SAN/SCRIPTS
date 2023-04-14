@@ -1,0 +1,2 @@
+#!/bin/bash
+while true; do lynx -dump $link | grep -i "search term" && espeak -a 2 "$1 Updated"; sleep 5; done

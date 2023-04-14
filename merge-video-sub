@@ -1,0 +1,7 @@
+#!/bin/bash
+
+read -p "Enter name "$'\n' name
+
+#-S = remove all subs
+#-a jpn = only japanese audio
+mkvmerge -o $name -S -a jpn "$1" "$2"

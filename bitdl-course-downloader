@@ -1,0 +1,111 @@
+#!/bin/python3
+import requests, os
+from bs4 import BeautifulSoup
+
+#change $HOME to actual directory path
+os.chdir("$HOME/Desktop/folder")
+
+
+def html_dow(url1):
+    try:
+        res = requests.get(url1)
+        if not res.ok:
+            print("Ooooppsss")
+        else:
+            return res.text
+    except HTTPError as e:
+        print(e.response.text)
+        exit()
+
+
+def scrape_links(html):
+    soup = BeautifulSoup(html, "lxml")
+    links = [
+        link.get("href")
+        for link in soup("a")
+        if "mkv" in link.get("href") or "mp4" in link.get("href")
+    ]
+    return links
+
+
+def list_links(links):
+    no = 1
+    for i in links:
+        print(no, ")", requests.utils.unquote(i.split("/")[-1]))
+        no += 1
+    print("Links to download : " + str(len(links)))
+
+
+def menu1():
+    marker = 1
+    slicer = []
+    while 1:
+        print("Enter links to Download (q:quit / p:print links)")
+        choice = str(input(">>> "))
+        if choice == "q":
+            if not slicer:
+                print("No links Selected \nQuitting..............\n")
+                quit()
+            break
+        elif choice == "p":
+            print(*slicer)
+            continue
+        slicer.append(choice)
+        continue
+    return slicer
+
+
+def make_dir(url):
+    if url[-1] != "/":
+        url = url + "/"
+    new_url = url.split("/")[-2]
+    if os.path.isdir(new_url):
+        os.chdir(new_url)
+    else:
+        try:
+            os.mkdir(new_url)
+            os.chdir(new_url)
+        except Exception:
+            pass
+
+
+def make_links(lnks, url, parts):
+
+    for p in parts:
+        if "," in p:
+            init = int(p.split(",")[0]) - 1
+            final = int(p.split(",")[1])
+        else:
+            init = int(p) - 1
+            final = int(p)
+
+        print(f"\nDownloadig links {init+1} -- {final}\n")
+
+        for i in lnks[init:final]:
+            print(requests.utils.unquote(i.split("/")[-1]))
+            u = url + i
+            os.system(f'aria2c -x4 "{u}"')
+
+
+def donso():
+    print("-" * 50)
+    print("\t\t\tDONE")
+    print("-" * 50)
+
+
+def main():
+    try:
+        url = input("Enter BitDL url : ")
+        lnks = scrape_links(html_dow(url))
+        list_links(lnks)
+        parts = menu1()
+        make_dir(url)
+        make_links(lnks, url, parts)
+        donso()
+    except KeyboardInterrupt:
+        print("\n>>Operation Aborted....\n>>Program Exiting....")
+
+
+if __name__ == "__main__":
+    main()
+

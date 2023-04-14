@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+
+rgx=(\( -path "*/foldername/*" -or -path "*/foldername/*" \))
+
+
+
+find $HOME -type f ! "${rgx[@]}" -prune | \
+fzf --height 90% --ansi --algo=v1 --border=sharp --prompt="➤  " --pointer="➤ " \
+--marker="➤ " --layout=reverse --margin 0,0,0,12 \
+--color fg:-1,bg:-1,hl:46,fg+:40,bg+:233,hl+:46 --color prompt:166,border:46 \
+-m --bind "enter:execute-silent(setsid xdg-open {})"
+
+
+#
+
+
+#[ "$selected" = "" ] && exit
+
+#echo "$selected" | while read -r line ; do xdg-open "$line" > /dev/null 2>&1 ; done
+
+
+#use setsid check with bind & xargs

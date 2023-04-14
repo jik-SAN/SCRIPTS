@@ -1,0 +1,6 @@
+#!/bin/bash
+[ $# -gt 1 ] && (lnk=$1;shift;opt=$@;aria2c "$lnk" "$opt")
+[ $# -eq 1 ] && aria2c -x4 $1
+[ $# -eq 0 ] && echo -e "\nError : Need download link as argument!!!!\n"
+
+

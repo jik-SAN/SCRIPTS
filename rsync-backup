@@ -1,0 +1,25 @@
+#!/usr/bin/bash
+
+# e - script stops on error
+# u - error if undefined variable
+# o pipefail - script fails if command piped fails
+#set -euo pipefail
+
+[ "$#" == 0 ] || [ ! -f "$1" ] && { echo "You need to give a data file as argument!!!" && exit 1; }
+
+
+file="$1"
+
+   while read -r line; do
+	src=${line%,*}
+	dest=${line#*,}
+	mkdir -p "$dest"
+	rsync -avh --exclude={'folder1','folder2'} "$src" "$dest"
+	echo -e "\n\e[30;48;5;226mBackup from $(basename $src) to $(basename $dest) complete\e[0m"
+
+   done < "$file"
+
+
+#tardate=$(date +"%Y-%m-%d")
+
+#tar zcvf "Backup-($tardate).tar.gz" All-Backup

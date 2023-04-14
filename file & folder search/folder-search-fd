@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+ex_ops=(-E "**/folder-name/*")
+
+
+
+fd . $HOME -t d -H "${ex_ops[@]}" | \
+fzf --height 100% --ansi --algo=v1 --border=sharp --prompt="➤  " --pointer="➤ " \
+--marker="➤ " --margin 0,0,0,0 \
+--color fg:-1,bg:-1,hl:46,fg+:40,bg+:233,hl+:46 --color prompt:166,border:46 \
+-m -d / --with-nth -2.. | xargs -I % setsid xdg-open % >/dev/null 2>&1
+
+
+# --layout=reverse
+
